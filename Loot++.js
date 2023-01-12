@@ -122,7 +122,7 @@ Game_Enemy.prototype.makeDropItems = function(){
     //const regex1 = /Item\s*:\s*(\d+)\s*(\s*w:(\d+))?/gm;
     const regex1new = /(?<ItemCategory>Item|Armor|Weapon)\s*:\s*(?<ID>\d+)\s*(?<Weight>w:(?<WeightFactor>\d+))?/gm;
     //const regex1NotGlobal = /Item\s*:\s*(\d+)/;
-    c//onst regexWeight = /(w:(\d+))/;
+    //const regexWeight = /(w:(\d+))/;
     // /Item \d+: \d+,
     //Array with a list of the matches 
     let foundTagEntrysList = Array.from(this.enemy().meta.HellsCommonDropList.matchAll(regex1new), entry => entry);
