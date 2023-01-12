@@ -1,13 +1,21 @@
 "use strict";
 (() => {
+//=============================================================================
+// Hells Toolkit MZ - Loot++
+// VisuMZ_1_BattleCore.js
+//=============================================================================
+
+//=============================================================================    
     // All procedures are written here.
-    /*@target MZ
- * @plugindesc Hells first Plugin
+    /*:
+ * @target MZ
+ * @plugindesc Hells first Plugin! A small plugin which allows you to m
  * @author Hellinfernel
  * @url 
- * @base 
- * @orderAfter VisuMZ_3_EnemyLevels
+ * @base
+ * @orderAfter
  * */
+//=============================================================================
 Game_Enemy.prototype.makeDropItems = function(){
     const regex1 = /Item\s*:\s*(\d+)\s*(\s*w:(\d+))?/gm;
     const regex1NotGlobal = /Item\s*:\s*(\d+)/;
