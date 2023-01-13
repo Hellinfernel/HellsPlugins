@@ -140,33 +140,48 @@ Game_Enemy.prototype.makeDropItems = function(){
     //const regex1 = /Item\s*:\s*(\d+)\s*(\s*w:(\d+))?/gm;
     const regex1new = /(?<ItemCategory>Item|Armor|Weapon)\s*:\s*(?<ID>\d+)\s*(?<Weight>w:(?<WeightFactor>\d+))?/gm;
     const regexRareDrops = /(?<ItemCategory>Item|Weapon|Armor)\s*:\s*(?<ID>\d+)\s*(?<DropRate>r:\s*(?<DropRateChance>\d*))?/gm;
+    //The list of the actually droping items. the same item can occur multiple times.
+    let actualDropList = new Array;
+    let foundTagEntrysList;
+    let commonItemDataMap = new Map;
+    let CommonDropBase;
+    let CommonDropFlat;
+    let level = this._level;
+    let CommonDropWorth;
+    let rareItemDataMap = new Map;
+    let foundTagRareEntrysList;
     //const regex1NotGlobal = /Item\s*:\s*(\d+)/;
     //const regexWeight = /(w:(\d+))/;
     // /Item \d+: \d+,
-    //Array with a list of the matches 
-    let foundTagEntrysList = Array.from(this.enemy().meta.HellsCommonDropList.matchAll(regex1new), entry => entry);
-    let foundTagRareEntrysList = Array.from(this.enemy().meta.HellsRareDropList.matchAll(regexRareDrops), entry => entry);
+    //Array with a list of the matches
+    if(this.enemy().meta.HellsCommonDropList){
+        foundTagEntrysList = Array.from(this.enemy().meta.HellsCommonDropList.matchAll(regex1new), entry => entry);
+        commonItemDataMap = new Map;
+        newTagsAnalyser();
+        CommonDropBase = parseInt(this.enemy().meta.HellsCommonDropBase);
+        CommonDropFlat = parseInt(this.enemy().meta.HellsCommonDropFlat);
+        level = this._level;
+        CommonDropWorth = CommonDropBase + (CommonDropFlat * (level - 1));
+        commonDropsCalculation();
+    }
+    if(this.enemy().meta.HellsRareDropList){
+        foundTagRareEntrysList = Array.from(this.enemy().meta.HellsRareDropList.matchAll(regexRareDrops), entry => entry);
+        newRareTagsAnalyser();
+        rareDropsCalculation();
+
+    }
+    
     //console.log("matches found:");
     //foundTagEntrysList.forEach(element => console.log(element.toString()));
     //Array with a list of the data the matches 
-    let commonItemDataMap = new Map;
-    let rareItemDataMap = new Map;
+
 
     //The list of the actually droping items. the same item can occur multiple times.
-    let actualDropList = new Array;
-    newTagsAnalyser();
-    newRareTagsAnalyser();
     //This is the value of the common drops the unit is supposed to drop. The higher it is, the more value you can get.
     //console.log("HellsCommonDropBase: " + this.enemy().meta.HellsCommonDropBase);
     //console.log("HellsCommonDropFlat: " + this.enemy().meta.HellsCommonDropFlat);
-    let CommonDropBase = parseInt(this.enemy().meta.HellsCommonDropBase);
-    let CommonDropFlat = parseInt(this.enemy().meta.HellsCommonDropFlat);
-    let level = this._level;
-    let CommonDropWorth = CommonDropBase + (CommonDropFlat * (level - 1));
     //console.log("CommonDropWorth:  " + CommonDropWorth);
     //console.log(typeof CommonDropWorth);
-    filteredMap();
-
     //Array.from(commonItemDataMap.entries()).filter(Item => Item[0].price <= CommonDropWorth).map(value => {return value[0],value[1];} );
     /*var cleanFilteredList = function(){
         return commonItemDataList.filter((Item => Item.price <= CommonDropWorth));
@@ -186,8 +201,6 @@ Game_Enemy.prototype.makeDropItems = function(){
                 }
             }
     }*/
-    commonDropsCalculation();
-    rareDropsCalculation();
     //console.log("actualDropList: "+ typeof actualDropList);
     //actualDropList.forEach(x => console.log(typeof x));
     return actualDropList;
