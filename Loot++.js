@@ -75,6 +75,24 @@
  * 
  * The amount of drops is measured by the value of the items that are in the list (<HellsCommonDropList:(Item|Armor|Weapon):x w:y>).
  * 
+ * <HellsRareDropList:(Item|Armor|Weapon):x r:y>
+ * 
+ *  This notetag is a list of things that can be dropped as Rare Drops. A distinction can be made between items, weapons and armor.
+ *  "x" is the id of the item|Weapon|Armor.
+ *  With the r:y you can determine the droprate of these drops (in percent).
+ *  "y" is a number, where currently only whole numbers are processed correctly (integer).
+ *  This modifier is optional. If you dont use it, the Droprate of the item will be set to 100, which means that it drops every time.
+ * 
+ * You can make several entries with the note tag by repeating the same sequence several times within the notetag.
+ * 
+ * Example:
+ * 
+ * <HellsRareDropList: Item:1 r:50>
+ * <HellsRareDropList: Item:1 r:50,
+ * Weapon:2 r:20,
+ * Armor:3>
+ * 
+ * 
  * 
  *
  * ============================================================================
@@ -121,28 +139,32 @@
 Game_Enemy.prototype.makeDropItems = function(){
     //const regex1 = /Item\s*:\s*(\d+)\s*(\s*w:(\d+))?/gm;
     const regex1new = /(?<ItemCategory>Item|Armor|Weapon)\s*:\s*(?<ID>\d+)\s*(?<Weight>w:(?<WeightFactor>\d+))?/gm;
+    const regexRareDrops = /(?<ItemCategory>Item|Weapon|Armor)\s*:\s*(?<ID>\d+)\s*(?<DropRate>r:\s*(?<DropRateChance>\d*))?/gm;
     //const regex1NotGlobal = /Item\s*:\s*(\d+)/;
     //const regexWeight = /(w:(\d+))/;
     // /Item \d+: \d+,
     //Array with a list of the matches 
     let foundTagEntrysList = Array.from(this.enemy().meta.HellsCommonDropList.matchAll(regex1new), entry => entry);
-    console.log("matches found:");
-    foundTagEntrysList.forEach(element => console.log(element.toString()));
+    let foundTagRareEntrysList = Array.from(this.enemy().meta.HellsRareDropList.matchAll(regexRareDrops), entry => entry);
+    //console.log("matches found:");
+    //foundTagEntrysList.forEach(element => console.log(element.toString()));
     //Array with a list of the data the matches 
     let commonItemDataMap = new Map;
+    let rareItemDataMap = new Map;
 
     //The list of the actually droping items. the same item can occur multiple times.
     let actualDropList = new Array;
     newTagsAnalyser();
+    newRareTagsAnalyser();
     //This is the value of the common drops the unit is supposed to drop. The higher it is, the more value you can get.
-    console.log("HellsCommonDropBase: " + this.enemy().meta.HellsCommonDropBase);
-    console.log("HellsCommonDropFlat: " + this.enemy().meta.HellsCommonDropFlat);
+    //console.log("HellsCommonDropBase: " + this.enemy().meta.HellsCommonDropBase);
+    //console.log("HellsCommonDropFlat: " + this.enemy().meta.HellsCommonDropFlat);
     let CommonDropBase = parseInt(this.enemy().meta.HellsCommonDropBase);
     let CommonDropFlat = parseInt(this.enemy().meta.HellsCommonDropFlat);
     let level = this._level;
     let CommonDropWorth = CommonDropBase + (CommonDropFlat * (level - 1));
-    console.log("CommonDropWorth:  " + CommonDropWorth);
-    console.log(typeof CommonDropWorth);
+    //console.log("CommonDropWorth:  " + CommonDropWorth);
+    //console.log(typeof CommonDropWorth);
     filteredMap();
 
     //Array.from(commonItemDataMap.entries()).filter(Item => Item[0].price <= CommonDropWorth).map(value => {return value[0],value[1];} );
@@ -164,41 +186,59 @@ Game_Enemy.prototype.makeDropItems = function(){
                 }
             }
     }*/
-    while (filteredMap().size >= 1){
-        let item = null;
-        let randomNumber = Math.ceil(Math.random()*combinedWeight());
-        console.log("randomNumber: "+ randomNumber);
-        filteredMap().forEach((value,key) => {
-            console.log("currentItem: " + key.name);
-        if(item == null){
-            if(value >= randomNumber){
-                item = key;
-                console.log("Choosen Item: " + item.name);
-            }
-            else{
-                randomNumber = randomNumber - value;
-            }
-        }});
-            
-        
-        CommonDropWorth = CommonDropWorth - item.price;
-        actualDropList.push(item);
-    
-       /* filteredMap =  Array.from(commonItemDataMap.entries())
-        .filter(Item => Item[0].price <= CommonDropWorth)
-        .map(value => {return [value[0]*value[1]];});*/
+    commonDropsCalculation();
+    rareDropsCalculation();
+    //console.log("actualDropList: "+ typeof actualDropList);
+    //actualDropList.forEach(x => console.log(typeof x));
+    return actualDropList;
+
+    function rareDropsCalculation() {
+        rareItemDataMap.forEach((value, key) => {
+            let randomNumber = Math.ceil(Math.random() * 100);
+                if (value >= randomNumber) {
+                    actualDropList.push(key);
+                }
+        });
+            /* filteredMap =  Array.from(commonItemDataMap.entries())
+             .filter(Item => Item[0].price <= CommonDropWorth)
+             .map(value => {return [value[0]*value[1]];});*/
         
     }
-    console.log("actualDropList: "+ typeof actualDropList);
-    actualDropList.forEach(x => console.log(typeof x));
-    return actualDropList;
+
+    function commonDropsCalculation() {
+        while (filteredMap().size >= 1) {
+            let item = null;
+            let randomNumber = Math.ceil(Math.random() * combinedWeight());
+            //console.log("randomNumber: "+ randomNumber);
+            filteredMap().forEach((value, key) => {
+                //console.log("currentItem: " + key.name);
+                if (item == null) {
+                    if (value >= randomNumber) {
+                        item = key;
+                        //console.log("Choosen Item: " + item.name);
+                    }
+                    else {
+                        randomNumber = randomNumber - value;
+                    }
+                }
+            });
+
+
+            CommonDropWorth = CommonDropWorth - item.price;
+            actualDropList.push(item);
+
+            /* filteredMap =  Array.from(commonItemDataMap.entries())
+             .filter(Item => Item[0].price <= CommonDropWorth)
+             .map(value => {return [value[0]*value[1]];});*/
+        }
+    }
 
     function filteredMap() {
         let map = new Map;
         commonItemDataMap.forEach((value, key) => {
             if (key.price <= CommonDropWorth) {
                 map.set(key, value);
-                console.log("item in filteredMap: " + key.name + value);
+                //console.log("item in filteredMap: " + key.name + value);
             }
         });
         return map;
@@ -217,7 +257,7 @@ Game_Enemy.prototype.makeDropItems = function(){
                 //let itemValue = substring1.slice(":")[1];
                 //commonItemDataList.add($dataItems[substring1]);
                 Item = $dataItems[subStringArray[1]];
-                console.log($dataItems[subStringArray[1]].name);
+                //console.log($dataItems[subStringArray[1]].name);
                 if (regexWeight.test(matchedElement)) {
                     let substringArray2 = matchedElement.match(regexWeight)[0].split(':');
                     Weight = parseInt(substringArray2[1]);
@@ -266,6 +306,38 @@ Game_Enemy.prototype.makeDropItems = function(){
         let Weight = 0;
         filteredMap().forEach((value, key) => Weight = parseInt(Weight) + parseInt(value));
         return Weight;
+    }
+    function newRareTagsAnalyser() {
+        foundTagRareEntrysList.forEach(matchedElement => {
+            
+                let Item;
+                let DropChance;
+                let ID = matchedElement.groups.ID;
+                    switch (matchedElement.groups.ItemCategory) {
+                        case "Item":
+                            Item = $dataItems[ID];
+                            break;
+
+                        case "Weapon":
+                            Item = $dataWeapons[ID];
+                            break;
+
+                        case "Armor":
+                            Item = $dataArmors[ID];
+                            break;
+                        default:
+                            break;
+                    }
+                    if (matchedElement.groups.DropRate){
+                        DropChance = matchedElement.groups.DropRateChance; 
+                    }
+                    else{
+                        DropChance = 100; 
+                    }
+                rareItemDataMap.set(Item, DropChance);
+
+            
+        });
     }
     }
     
