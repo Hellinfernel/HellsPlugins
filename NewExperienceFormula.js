@@ -45,11 +45,11 @@
  *
  * === Class Notetags ===
  * 
- * <ExperienceFormularBase:100>
+ * <ExperienceFormularBase:x>
  * 
  * The basis amount of EXP that is required to level up.
  * 
- * <ExperienceFormularFlat:100>
+ * <ExperienceFormularFlat:x>
  * 
  * The Flat increase in required EXP. This does increase with every level up you get ("Little Gauß");
  * 

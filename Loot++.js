@@ -136,6 +136,8 @@
  *
  * */
 //=============================================================================
+
+const alias = Game_Enemy.prototype.makeDropItems;
 Game_Enemy.prototype.makeDropItems = function(){
     //const regex1 = /Item\s*:\s*(\d+)\s*(\s*w:(\d+))?/gm;
     const regex1new = /(?<ItemCategory>Item|Armor|Weapon)\s*:\s*(?<ID>\d+)\s*(?<Weight>w:(?<WeightFactor>\d+))?/gm;
@@ -203,7 +205,7 @@ Game_Enemy.prototype.makeDropItems = function(){
     }*/
     //console.log("actualDropList: "+ typeof actualDropList);
     //actualDropList.forEach(x => console.log(typeof x));
-    return actualDropList;
+    return actualDropList.concat(alias.call(this));
 
     function rareDropsCalculation() {
         rareItemDataMap.forEach((value, key) => {
